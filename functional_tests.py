@@ -10,8 +10,11 @@ class NewVisitorTest(unittest.TestCase):
 
     def setUp(self) -> None:
         """Начальная конфигурация"""
-        self.browser = webdriver.Firefox()
-
+        try:
+            self.browser = webdriver.Firefox()
+        except:
+            self.browser = webdriver.Chrome()
+            
     def tearDown(self) -> None:
         """Деструктор"""
         self.browser.quit()
