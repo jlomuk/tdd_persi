@@ -65,10 +65,11 @@ class NewVisitorTest(LiveServerTestCase):
         self._check_for_row_in_list_table('1: Купить павлиньи перья')
         edith_list_url = self.browser.current_url
         self.assertRegex(edith_list_url, '/lists/.+')
-        self.tearDown()
-        self.setUp()
+        self.browser.quit()
+        self.browser = webdriver.Chrome()
+        self.browser.get(self.live_server_url)
         self._input_new_item_in_table('Сделать мушку из павлиньих перьев')
-        self._check_for_row_in_list_table('2: Сделать мушку из павлиньих перьев')
+        self._check_for_row_in_list_table('1: Сделать мушку из павлиньих перьев')
         francis_list_url = self.browser.current_url
         self.assertRegex(francis_list_url, '/lists/.+')
         page_text = self.browser.find_element_by_tag_name('body').text
