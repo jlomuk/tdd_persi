@@ -91,7 +91,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         inputbox.send_keys('testing')
         inputbox.send_keys(Keys.ENTER)
-        _check_for_row_in_list_table('1: testing')
+        self._check_for_row_in_list_table('1: testing')
 
         inputbox = self.browser.find_element_by_id('id_new_item')
 
