@@ -11,7 +11,7 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = env("DEBUG")
+DEBUG = int(env("DEBUG"))
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
@@ -98,3 +98,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STAGING_SERVER = env('STAGING_SERVER')

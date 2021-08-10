@@ -1,6 +1,7 @@
 import time
 
-from django.test import LiveServerTestCase
+from django.conf import settings 
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
@@ -21,7 +22,7 @@ def wait_element(func):
     return wraper
 
 
-class NewVisitorTest(LiveServerTestCase):
+class NewVisitorTest(StaticLiveServerTestCase):
     """тест нового посетителя"""
 
     def setUp(self) -> None:
@@ -30,6 +31,8 @@ class NewVisitorTest(LiveServerTestCase):
             self.browser = webdriver.Firefox()
         except:
             self.browser = webdriver.Chrome()
+        if settings.STAGING_SERVER:
+            self.live_server_url = 'http://' + settings.STAGING_SERVER
             
     def tearDown(self) -> None:
         """Деструктор"""
