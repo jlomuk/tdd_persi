@@ -55,8 +55,8 @@ class NewVisitorTest(LiveServerTestCase):
         header_text = self.browser.find_element_by_tag_name('h1').text
         self.assertIn('To-Do', header_text)
         self._input_new_item_in_table('Купить павлиньи перья')
-        self._input_new_item_in_table('Сделать мушку из павлиньих перьев')
         self._check_for_row_in_list_table('1: Купить павлиньи перья')
+        self._input_new_item_in_table('Сделать мушку из павлиньих перьев')
         self._check_for_row_in_list_table('2: Сделать мушку из павлиньих перьев')
 
     def test_multiple_users_can_start_lists_at_different_urls(self):
