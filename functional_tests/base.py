@@ -25,13 +25,12 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def _wait_element(func):
         """Декоратор для ожидания отображения элемента"""
-        MAX_WAIT = 5
+        MAX_WAIT = 10
         def wraper(*args, **kwargs):
             start = time.time()
             while True:
                 try:
-                    func(*args, *kwargs)
-                    return
+                    return func(*args, *kwargs)
                 except (AssertionError, WebDriverException) as e:
                     if time.time() - start > MAX_WAIT:
                         raise e
