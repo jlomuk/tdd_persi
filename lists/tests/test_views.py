@@ -1,21 +1,23 @@
 from django.test import TestCase
 from django.urls import resolve
+from django.shortcuts import reverse
 
 from lists.views import home_page
 from lists.models import Item, List
 
 
-class NewItemTest(TestCase):
+class ListViewTest(TestCase):
+    """Тест списка дел"""
 
     def test_validation_errors_are_sent_back_to_home_page_template(self):
-        response = self.client.get('/lists/new/', data={'item_text': ''})
+        response = self.client.post(reverse('new_list'), data={'item_text': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'home.html')
-        expected_error = 'You can not have an empty list item'
+        expected_error = "You can not have an empty list item"
         self.assertContains(response, expected_error)
 
     def test_invalid_list_arent_saved(self):
-        self.client.post('/lists/new/', data={'item_text': ''})
+        self.client.post(reverse('new_list'), data={'item_text': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
 
@@ -24,7 +26,7 @@ class NewItemTest(TestCase):
         correct_list = List.objects.create()
 
         self.client.post(
-            f'/lists/{correct_list.id}/add_item/',
+            reverse('view_list', args=[correct_list.id]),
             data={'item_text': 'A new item for an existing list'}
         )
 
@@ -38,15 +40,11 @@ class NewItemTest(TestCase):
         correct_list = List.objects.create()
 
         response = self.client.post(
-            f'/lists/{correct_list.id}/add_item/',
+            reverse('view_list', args=[correct_list.id]),
             data={'item_text': 'A new item for an existing list'}
         )
 
-        self.assertRedirects(response, f'/lists/{correct_list.id}/') 
-
-
-class ListViewTest(TestCase):
-    """Тест списка дел"""
+        self.assertRedirects(response, f'/lists/{correct_list.id}/')
 
     def test_uses_list_template(self):
         list_ = List.objects.create()

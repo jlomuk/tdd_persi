@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 from .models import Item, List
 
@@ -9,11 +10,13 @@ def home_page(request):
     return render(request, 'home.html')
 
 
-def view_list(request, id):
+def view_list(request, list_id):
     """Выводит список дел"""
-    list_ = List.objects.get(id=id)
-    items = list_.item_set.all()
-    return render(request, 'list.html', {'items': items, 'list': list_})
+    list_ = List.objects.get(id=list_id)
+    if request.method == 'POST':
+        Item.objects.create(text=request.POST.get('item_text', ''), list=list_)
+        return redirect(reverse('view_list', args=[list_.id]))
+    return render(request, 'list.html', {'list': list_})
 
 
 def new_list(request):
@@ -25,13 +28,6 @@ def new_list(request):
         item.save()
     except ValidationError:
         list_.delete()
-        error = "You can't have an empty list item"
+        error = "You can not have an empty list item"
         return render(request, 'home.html', {'error': error})
-    return redirect(f'/lists/{list_.id}/')
-
-
-def add_item(request, id):
-    """Добавляет запись в существующий список"""
-    list_ = List.objects.get(id=id)
-    Item.objects.create(text=request.POST.get('item_text', ''), list=list_)
     return redirect(f'/lists/{list_.id}/')
