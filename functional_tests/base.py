@@ -46,8 +46,11 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def _input_new_item_in_table(self, item):
         """Ввод новых элементов в шаблон"""
-        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox = self.get_item_input_box()
         inputbox.send_keys(item)
         inputbox.send_keys(Keys.ENTER)
+
+    def get_item_input_box(self):
+        return self.browser.find_element_by_id('id_text')
 
 
