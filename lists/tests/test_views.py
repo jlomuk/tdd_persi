@@ -4,6 +4,7 @@ from django.shortcuts import reverse
 
 from lists.views import home_page
 from lists.models import Item, List
+from lists.forms import ItemForm
 
 
 class ListViewTest(TestCase):
@@ -111,3 +112,7 @@ class HomePageTest(TestCase):
     def test_only_saves_items_when_necessary(self):
         self.client.get('/')
         self.assertEqual(Item.objects.count(), 0)
+
+    def test_uses_home_template(self):
+        response = self.client.get('/')
+        self.assertIsInstance(response.context['form'], ItemForm)

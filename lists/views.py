@@ -3,11 +3,13 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from .models import Item, List
+from .forms import ItemForm
 
 
 def home_page(request):
     """Домашняя страница"""
-    return render(request, 'home.html')
+    form = ItemForm()
+    return render(request, 'home.html', {'form': form})
 
 
 def view_list(request, list_id):
