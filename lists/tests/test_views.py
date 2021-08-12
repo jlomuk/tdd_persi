@@ -10,21 +10,28 @@ from lists.forms import ItemForm
 class ListViewTest(TestCase):
     """Тест списка дел"""
 
-    def test_validation_errors_are_sent_back_to_home_page_template(self):
-        response = self.client.post(reverse('new_list'), data={'item_text': ''})
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
-        expected_error = "You can not have an empty list item"
-        self.assertContains(response, expected_error)
-
-    def test_validation_errors_end_up_on_lists_page(self):
+    def post_invalid_input(self):
         list_ = List.objects.create()
         response = self.client.post(
             reverse('view_list', args=[list_.id]),
             data={'item_text': ''}
         )
+        return response
+
+    def test_for_invalid_input_nothing_saved_to_db(self):
+        self.post_invalid_input()
+        self.assertEqual(Item.objects.count(), 0)
+
+    def test_for_invalid_input_renders_list_template(self):
+        response = self.post_invalid_input()
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'list.html')
+
+    def test_for_invalid_input_passes_form_to_template(self):
+        response = self.post_invalid_input()
+        self.assertIsInstance(response.context['form'], ItemForm)
+
+    def test_for_invalid_input_shows_error_on_page(self):
+        response = self.post_invalid_input()
         expected_error = "You can not have an empty list item"
         self.assertContains(response, expected_error)
 
@@ -39,7 +46,7 @@ class ListViewTest(TestCase):
 
         self.client.post(
             reverse('view_list', args=[correct_list.id]),
-            data={'item_text': 'A new item for an existing list'}
+            data={'text': 'A new item for an existing list'}
         )
 
         self.assertEqual(Item.objects.count(), 1)
@@ -53,7 +60,7 @@ class ListViewTest(TestCase):
 
         response = self.client.post(
             reverse('view_list', args=[correct_list.id]),
-            data={'item_text': 'A new item for an existing list'}
+            data={'text': 'A new item for an existing list'}
         )
 
         self.assertRedirects(response, f'/lists/{correct_list.id}/')
@@ -83,17 +90,39 @@ class ListViewTest(TestCase):
         self.assertContains(response, 'itemey 2')
         self.assertNotContains(response, 'other item')
 
+    def test_test_display_item_form(self):
+        list_ = List.objects.create()
+        response = self.client.get(reverse('view_list', args=[list_.id]))
+        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertContains(response, 'name="text"')
+
 
 class NewListTest(TestCase):
 
+    def test_for_invalid_input_renders_home_template(self):
+        response = self.client.post(reverse('new_list'), data={'text': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+
+    def test_validation_errors_are_shown_on_home_page(self):
+        response = self.client.post(reverse('new_list'), data={'text': ''})
+        expected_error = "You can not have an empty list item"
+        self.assertContains(response, expected_error)
+
+    def test_validation_input_passes_form_to_template(self):
+        response = self.client.post(reverse('new_list'), data={'text': ''})
+        self.assertIsInstance(response.context['form'], ItemForm)
+
     def test_can_save_a_POST_request(self):
-        response = self.client.post('/lists/new/', data={'item_text': 'A new list item'})
+        response = self.client.post(reverse('new_list'), data={
+                                    'text': 'A new list item'})
         new_items = Item.objects.all()
         self.assertEqual(new_items.count(), 1)
         self.assertEqual(new_items.first().text, 'A new list item')
 
     def test_redirects_after_POST(self):
-        response = self.client.post('/lists/new/', data={'item_text': 'A new list item'})
+        response = self.client.post(reverse('new_list'), data={
+                                    'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/lists/{new_list.id}/')
 

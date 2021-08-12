@@ -1,3 +1,5 @@
+import time
+
 from unittest import skip
 from selenium.webdriver.common.keys import Keys
 
@@ -13,8 +15,7 @@ class ItemValidationTest(FunctionalTest):
             self.browser.find_element_by_css_selector
         )
         self.assertEqual(
-            wait_css_element('.has-error').text,
-            "You can not have an empty list item"
+            wait_css_element('#id_text:invalid').text, ''
         )
         self.get_item_input_box().send_keys('Buy milk')
         self.get_item_input_box().send_keys(Keys.ENTER)
@@ -22,8 +23,7 @@ class ItemValidationTest(FunctionalTest):
 
         self.get_item_input_box().send_keys(Keys.ENTER)
         self.assertEqual(
-            wait_css_element('.has-error').text,
-            "You can not have an empty list item"
+            wait_css_element('#id_text:valid').text, ''
         )
  
         self.get_item_input_box().send_keys('Make tea')
