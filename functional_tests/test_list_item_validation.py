@@ -23,7 +23,7 @@ class ItemValidationTest(FunctionalTest):
 
         self.get_item_input_box().send_keys(Keys.ENTER)
         self.assertEqual(
-            wait_css_element('#id_text:valid').text, ''
+            wait_css_element('#id_text:invalid').text, ''
         )
  
         self.get_item_input_box().send_keys('Make tea')
