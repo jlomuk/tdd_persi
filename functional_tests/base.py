@@ -53,4 +53,8 @@ class FunctionalTest(StaticLiveServerTestCase):
     def get_item_input_box(self):
         return self.browser.find_element_by_id('id_text')
 
+    def wait_css_element(self, selector):
+        return FunctionalTest._wait_element(
+            self.browser.find_element_by_css_selector)(selector)
+
 
