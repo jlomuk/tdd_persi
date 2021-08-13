@@ -1,9 +1,7 @@
-from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
-from django.urls import reverse
 
-from .models import Item, List
-from .forms import ItemForm
+from .models import List
+from .forms import ItemForm, ExistingListItemForm
 
 
 def home_page(request):
@@ -15,11 +13,11 @@ def home_page(request):
 def view_list(request, list_id):
     """Выводит список дел и добавляет в этот список дел новые элементы"""
     list_ = List.objects.get(id=list_id)
-    form = ItemForm()
+    form = ExistingListItemForm(for_list=list_)
     if request.method == 'POST':
-        form = ItemForm(data=request.POST)
+        form = ExistingListItemForm(data=request.POST, for_list=list_)
         if form.is_valid():
-            form.save(list_)
+            form.save()
             return redirect(list_)
     return render(request, 'list.html', {'list': list_, 'form': form})
 

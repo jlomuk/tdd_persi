@@ -4,7 +4,7 @@ from django.shortcuts import reverse
 
 from lists.views import home_page
 from lists.models import Item, List
-from lists.forms import ItemForm
+from lists.forms import ItemForm, ExistingListItemForm
 
 
 class ListViewTest(TestCase):
@@ -28,7 +28,7 @@ class ListViewTest(TestCase):
 
     def test_for_invalid_input_passes_form_to_template(self):
         response = self.post_invalid_input()
-        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertIsInstance(response.context['form'], ExistingListItemForm)
 
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
@@ -93,20 +93,20 @@ class ListViewTest(TestCase):
     def test_test_display_item_form(self):
         list_ = List.objects.create()
         response = self.client.get(reverse('view_list', args=[list_.id]))
-        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertIsInstance(response.context['form'], ExistingListItemForm)
         self.assertContains(response, 'name="text"')
 
-    # def test_duplicate_item_validation_errors_end_up_on_lists_page(self):
-    #     list1 = List.objects.create()
-    #     item1 = Item.objects.create(list=list1, text='textey')
-    #     response = self.client.post(
-    #         f'/lists/{list1.id}/',
-    #         data={'text': 'textey'}
-    #     )
-    #     expected_error = 'You have already got this in your list'
-    #     self.assertContains(response, expected_error)
-    #     self.assertTemplateUsed(response, 'list.html')
-    #     self.assertEqual(Item.objects.count(), 1)
+    def test_duplicate_item_validation_errors_end_up_on_lists_page(self):
+        list1 = List.objects.create()
+        item1 = Item.objects.create(list=list1, text='textey')
+        response = self.client.post(
+            f'/lists/{list1.id}/',
+            data={'text': 'textey'}
+        )
+        expected_error = 'You have already got this in your list'
+        self.assertContains(response, expected_error)
+        self.assertTemplateUsed(response, 'list.html')
+        self.assertEqual(Item.objects.count(), 1)
 
 
 class NewListTest(TestCase):

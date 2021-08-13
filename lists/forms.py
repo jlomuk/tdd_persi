@@ -34,3 +34,6 @@ class ExistingListItemForm(ItemForm):
         except ValidationError as e:
             e.error_dict = {'text': ['You have already got this in your list']}
             self._update_errors(e)
+
+    def save(self, *args, **kwargs):
+       return super(forms.ModelForm, self).save(*args, **kwargs)
