@@ -1,21 +1,17 @@
 import time
 
-from unittest import skip
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.keys import Keys
 
 
 class FunctionalTest(StaticLiveServerTestCase):
 
     def setUp(self) -> None:
         """Начальная конфигурация"""
-        try:
-            self.browser = webdriver.Firefox()
-        except:
-            self.browser = webdriver.Chrome()
+        self.browser = webdriver.Chrome()
         if settings.STAGING_SERVER:
             self.live_server_url = 'http://' + settings.STAGING_SERVER
 
@@ -26,6 +22,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     def _wait_element(func):
         """Декоратор для ожидания отображения элемента"""
         MAX_WAIT = 10
+
         def wraper(*args, **kwargs):
             start = time.time()
             while True:
@@ -35,6 +32,7 @@ class FunctionalTest(StaticLiveServerTestCase):
                     if time.time() - start > MAX_WAIT:
                         raise e
                     time.sleep(0.5)
+
         return wraper
 
     @_wait_element
@@ -56,5 +54,3 @@ class FunctionalTest(StaticLiveServerTestCase):
     def wait_css_element(self, selector):
         return FunctionalTest._wait_element(
             self.browser.find_element_by_css_selector)(selector)
-
-
