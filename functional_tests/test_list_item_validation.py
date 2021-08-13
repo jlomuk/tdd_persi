@@ -1,6 +1,3 @@
-import time
-
-from unittest import skip
 from selenium.webdriver.common.keys import Keys
 
 from .base import FunctionalTest
@@ -22,7 +19,7 @@ class ItemValidationTest(FunctionalTest):
         self.assertEqual(
             self.wait_css_element('#id_text:invalid').text, ''
         )
- 
+
         self.get_item_input_box().send_keys('Make tea')
         self.get_item_input_box().send_keys(Keys.ENTER)
         self._check_for_row_in_list_table('1: Buy milk')
@@ -38,6 +35,6 @@ class ItemValidationTest(FunctionalTest):
         self.get_item_input_box().send_keys(Keys.ENTER)
 
         self.assertEqual(
-            self.wait_css_element('.has-error').text, 
+            self.wait_css_element('.has-error').text,
             'You have already got this in your list'
         )
