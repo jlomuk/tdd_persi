@@ -54,3 +54,11 @@ class FunctionalTest(StaticLiveServerTestCase):
     def wait_css_element(self, selector):
         return FunctionalTest._wait_element(
             self.browser.find_element_by_css_selector)(selector)
+
+    def wait_tag_element(self, tag):
+        return FunctionalTest._wait_element(
+            self.browser.find_element_by_tag_name)(tag)
+
+    def wait_link_text_element(self, link):
+        return FunctionalTest._wait_element(
+            self.browser.find_element_by_link_text)(link)
