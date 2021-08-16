@@ -98,11 +98,17 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 AUTH_USER_MODEL = 'accounts.User'
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS = [
     'accounts.authentication.PasswordLessAuthenticationBackend',
-
-)
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STAGING_SERVER = env('STAGING_SERVER')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
