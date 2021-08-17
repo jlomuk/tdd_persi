@@ -62,3 +62,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     def wait_link_text_element(self, link):
         return FunctionalTest._wait_element(
             self.browser.find_element_by_link_text)(link)
+
+    def wait_name_element(self, name):
+        return FunctionalTest._wait_element(
+            self.browser.find_element_by_name)(name)
