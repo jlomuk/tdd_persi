@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import get_user_model
 
 from .models import List
 from .forms import ItemForm, ExistingListItemForm
@@ -27,9 +28,13 @@ def new_list(request):
     form = ItemForm(data=request.POST)
     if form.is_valid():
         list_ = List.objects.create()
+        list_.owner = request.user 
+        list_.save()
         form.save(list_)
         return redirect(list_)
     return render(request, 'home.html', {'form': form})
 
 def my_lists(request, email):
-    return render(request, 'my_lists.html')
+    User = get_user_model()
+    owner = User.objects.get(email=email)
+    return render(request, 'my_lists.html', {'owner': owner})
