@@ -1,12 +1,13 @@
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from django.shortcuts import reverse
 from django.test import TestCase
 from django.urls import resolve
-from django.shortcuts import reverse
-from django.contrib.auth import get_user_model
 
-from lists.views import home_page
-from lists.models import Item, List
 from lists.forms import ItemForm, ExistingListItemForm
-
+from lists.models import Item, List
+from lists.views import home_page
 
 User = get_user_model()
 
@@ -131,14 +132,14 @@ class NewListTest(TestCase):
 
     def test_can_save_a_POST_request(self):
         response = self.client.post(reverse('new_list'), data={
-                                    'text': 'A new list item'})
+            'text': 'A new list item'})
         new_items = Item.objects.all()
         self.assertEqual(new_items.count(), 1)
         self.assertEqual(new_items.first().text, 'A new list item')
 
     def test_redirects_after_POST(self):
         response = self.client.post(reverse('new_list'), data={
-                                    'text': 'A new list item'})
+            'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/lists/{new_list.id}/')
 
@@ -170,17 +171,21 @@ class MyListTest(TestCase):
         response = self.client.get('/lists/users/a@b.com')
         self.assertTemplateUsed(response, 'my_lists.html')
 
-
     def test_passes_correct_owner_to_template(self):
         User.objects.create(email='wrong@owner.com')
         correct_user = User.objects.create(email='a@b.com')
         response = self.client.get('/lists/users/a@b.com')
         self.assertEqual(response.context['owner'], correct_user)
 
-    def test_list_owner_is_saved_if_user_is_authenticated(self):
+    @patch('lists.views.List')
+    @patch('lists.views.ItemForm')
+    def test_list_owner_is_saved_if_user_is_authenticated(
+            self, mockItemFormClass, mockListClass,
+    ):
         user = User.objects.create(email='a@b.com')
+        mock_list = mockListClass.return_value
+        mock_list.get_absolute_url.return_value = '/'
         self.client.force_login(user)
-        self.client.post('/lists/new', data={'text': 'new item'})
-        list_ = List.objects.first()
-        self.assertEqual(list_.owner, user)
-    
+        response = self.client.post('/lists/new/', data={'text': 'new item'})
+        self.assertRedirects(response, '/')
+        self.assertEqual(mock_list.owner, user)
