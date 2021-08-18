@@ -3,6 +3,7 @@ import time
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, get_user_model
 from django.contrib.sessions.backends.db import SessionStore
+from selenium.common.exceptions import NoSuchElementException
 
 from .base import FunctionalTest
 
@@ -65,5 +66,9 @@ class MyListsTest(FunctionalTest):
 
         self.browser.find_element_by_link_text('Log out').click()
 
-        self.assertEqual(self.wait_link_text_element('My lists'), [])
+        try:
+            self.wait_link_text_element('My lists')
+            self.fail('My lists seen')
+        except NoSuchElementException:
+            pass
 

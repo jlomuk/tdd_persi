@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
+from django.contrib.auth import get_user_model
 
 from lists.models import Item, List
 
@@ -47,3 +48,13 @@ class ListTest(TestCase):
         item = Item(list=list2, text='bla')
         item.full_clean()
 
+    def test_lists_can_have_owners(self):
+        user = get_user_model().objects.create(email='a@b.com')
+        list_ = List.objects.create(owner=user)
+        self.assertIn(list_, user.list_set.all())
+
+    def test_list_name_is_first_item_text(self):
+        list_ = List.objects.create()
+        Item.objects.create(list=list_, text='first item')
+        Item.objects.create(list=list_, text='second item')
+        self.assertEqual(list_.name, 'first item')
