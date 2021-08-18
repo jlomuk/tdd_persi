@@ -1,3 +1,4 @@
+import unittest
 from django.test import TestCase
 from django.urls import resolve
 from django.shortcuts import reverse
@@ -113,7 +114,7 @@ class ListViewTest(TestCase):
         self.assertEqual(Item.objects.count(), 1)
 
 
-class NewListTest(TestCase):
+class NewListIntegratedTest(TestCase):
 
     def test_for_invalid_input_renders_home_template(self):
         response = self.client.post(reverse('new_list'), data={'text': ''})
@@ -141,6 +142,14 @@ class NewListTest(TestCase):
                                     'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/lists/{new_list.id}/')
+
+    @unittest.skip
+    def test_list_owner_is_saved_if_user_is_authenticated(self):
+        user = User.objects.create(email='a@b.com')
+        self.client.force_login(user)
+        self.client.post('/lists/new/', data={'text': 'new item'})
+        list_ = List.objects.first()
+        self.assertEqual(list_.owner, user)
 
 
 class HomePageTest(TestCase):
@@ -177,10 +186,5 @@ class MyListTest(TestCase):
         response = self.client.get('/lists/users/a@b.com')
         self.assertEqual(response.context['owner'], correct_user)
 
-    def test_list_owner_is_saved_if_user_is_authenticated(self):
-        user = User.objects.create(email='a@b.com')
-        self.client.force_login(user)
-        self.client.post('/lists/new/', data={'text': 'new item'})
-        list_ = List.objects.first()
-        self.assertEqual(list_.owner, user)
+
 

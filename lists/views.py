@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
 
-from .models import List
 from .forms import ItemForm, ExistingListItemForm
+from .models import List
 
 
 def home_page(request):
@@ -29,11 +29,16 @@ def new_list(request):
     if form.is_valid():
         list_ = List.objects.create()
         if request.user.is_authenticated:
-            list_.owner = request.user 
+            list_.owner = request.user
         list_.save()
         form.save(list_)
         return redirect(list_)
     return render(request, 'home.html', {'form': form})
+
+
+def new_list2(request):
+    pass
+
 
 def my_lists(request, email):
     User = get_user_model()
