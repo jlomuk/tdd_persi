@@ -8,7 +8,7 @@ from lists.models import Item, List
 
 class ItemTest(TestCase):
 
-    def test_dafault_text(self):
+    def test_default_text(self):
         item = Item()
         self.assertEqual(item.text, '')
 
@@ -58,3 +58,26 @@ class ListTest(TestCase):
         Item.objects.create(list=list_, text='first item')
         Item.objects.create(list=list_, text='second item')
         self.assertEqual(list_.name, 'first item')
+
+
+class ListModelTest(TestCase):
+
+    def test_create_new_creates_list_and_first_item(self):
+        List.create_new(first_item_text='new item text')
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'new item text')
+        new_list = List.objects.first()
+        self.assertEqual(new_item.list, new_list)
+
+    def test_create_new_optionally_saves_owner(self):
+        user = get_user_model().objects.create()
+        List.create_new(first_item_text='new item text', owner=user)
+        new_list = List.objects.first()
+        self.assertEqual(new_list.owner, user)
+
+    def test_lists_can_have_owner(self):
+        List(owner=get_user_model()())
+
+    def test_list_owner_is_optional(self):
+        List().full_clean()
+

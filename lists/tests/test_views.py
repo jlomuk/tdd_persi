@@ -1,13 +1,15 @@
 import unittest
+from unittest.mock import patch, Mock
+
+from django.contrib.auth import get_user_model
+from django.http import HttpRequest
+from django.shortcuts import reverse
 from django.test import TestCase
 from django.urls import resolve
-from django.shortcuts import reverse
-from django.contrib.auth import get_user_model
 
-from lists.views import home_page
-from lists.models import Item, List
 from lists.forms import ItemForm, ExistingListItemForm
-
+from lists.models import Item, List
+from lists.views import home_page, new_list2
 
 User = get_user_model()
 
@@ -114,6 +116,61 @@ class ListViewTest(TestCase):
         self.assertEqual(Item.objects.count(), 1)
 
 
+@patch('lists.views.NewListForm')
+class NewListViewUnitTest(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.request = HttpRequest()
+        self.request.POST['text'] = 'new list item'
+        self.request.user = Mock()
+
+    def test_passes_POST_data_to_NewListForm(self, mockNewListForm):
+        mock_form = mockNewListForm.return_value
+        mock_obj = mock_form.save.return_value
+        mock_obj.get_absolute_url.return_value = 'fake'
+
+        new_list2(self.request)
+        mockNewListForm.assert_called_once_with(data=self.request.POST)
+
+    def test_saves_form_with_owner_if_form_valid(self, mockNewListForm):
+        mock_form = mockNewListForm.return_value
+        mock_form.is_valid.return_value = True
+        mock_obj = mock_form.save.return_value
+        mock_obj.get_absolute_url.return_value = 'fake'
+
+        new_list2(self.request)
+        mock_form.save.assert_called_once_with(owner=self.request.user)
+
+    @patch('lists.views.redirect')
+    def test_redirects_to_form_returned_object_if_form_valid(
+            self, mock_redirect, mockNewListForm):
+        mock_form = mockNewListForm.return_value
+        mock_form.is_valid.return_value = True
+
+        response = new_list2(self.request)
+        self.assertEqual(response, mock_redirect.return_value)
+        mock_redirect.assert_called_once_with(mock_form.save.return_value)
+
+    @patch('lists.views.render')
+    def test_renders_home_template_with_form_if_form_invalid(
+            self, mock_render, mockNewListForm):
+        mock_form = mockNewListForm.return_value
+        mock_form.is_valid.return_value = False
+        response = new_list2(self.request)
+
+        self.assertEqual(response, mock_render.return_value)
+
+        mock_render.assert_called_once_with(
+            self.request, 'home.html', {'form': mock_form}
+        )
+    def test_does_not_save_if_form_invalid(self, mockNewListForm):
+        mock_form = mockNewListForm.return_value
+        mock_form.is_valid.return_value = False
+        response = new_list2(self.request)
+        self.assertFalse(mock_form.save.called)
+
+
+
 class NewListIntegratedTest(TestCase):
 
     def test_for_invalid_input_renders_home_template(self):
@@ -132,14 +189,14 @@ class NewListIntegratedTest(TestCase):
 
     def test_can_save_a_POST_request(self):
         response = self.client.post(reverse('new_list'), data={
-                                    'text': 'A new list item'})
+            'text': 'A new list item'})
         new_items = Item.objects.all()
         self.assertEqual(new_items.count(), 1)
         self.assertEqual(new_items.first().text, 'A new list item')
 
     def test_redirects_after_POST(self):
         response = self.client.post(reverse('new_list'), data={
-                                    'text': 'A new list item'})
+            'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/lists/{new_list.id}/')
 
@@ -179,12 +236,8 @@ class MyListTest(TestCase):
         response = self.client.get('/lists/users/a@b.com')
         self.assertTemplateUsed(response, 'my_lists.html')
 
-
     def test_passes_correct_owner_to_template(self):
         User.objects.create(email='wrong@owner.com')
         correct_user = User.objects.create(email='a@b.com')
         response = self.client.get('/lists/users/a@b.com')
         self.assertEqual(response.context['owner'], correct_user)
-
-
-
